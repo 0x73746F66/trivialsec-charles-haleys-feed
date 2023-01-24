@@ -1257,21 +1257,10 @@ class ConfigUpdateRequest(BaseModel):
     http_paths: Optional[list[str]]
     ports: Optional[list[PositiveInt]]
 
-
-class DataPlaneCategory(str, Enum):
-    SSH_CLIENT = 'sshclient'
-    SSH_PW_AUTH = 'sshpwauth'
-    DNS_RECURSIVE_QUERIES = 'dnsrd'
-    VNC_REMOTE_FRAME_BUFFER = 'vncrfb'
-
-
-class DataPlane(BaseModel):
-    asn: Optional[int]
-    asn_text: Optional[str]
+class CharlesHaley(BaseModel):
     ip_address: Union[IPv4Address, IPv6Address]
     last_seen: datetime
-    category: DataPlaneCategory
-
+    category: str
 
 class FeedConfig(BaseModel):
     source: str

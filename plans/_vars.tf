@@ -25,5 +25,5 @@ variable "build_env" {
 variable "schedule" {
   description = "cron schedule"
   type        = string
-  default     = "rate(1 hour)"
+  default     = "rate(1 day)"
 }
