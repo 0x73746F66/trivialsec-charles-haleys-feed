@@ -1257,18 +1257,17 @@ class ConfigUpdateRequest(BaseModel):
     http_paths: Optional[list[str]]
     ports: Optional[list[PositiveInt]]
 
+
 class CharlesHaley(BaseModel):
     ip_address: Union[IPv4Address, IPv6Address]
     last_seen: datetime
     category: str
 
+
 class FeedConfig(BaseModel):
     source: str
     name: str
-    description: str
     url: AnyHttpUrl
-    alert_title: str
-    abuse_email: Optional[EmailStr]
     disabled: bool
 
 
