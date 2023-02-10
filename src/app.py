@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic.error_wrappers import ValidationError
 
@@ -87,38 +87,37 @@ def process(feed: models.FeedConfig, feed_items: list[models.CharlesHaley]) -> l
             if item.current:
                 continue
             item.current = True
-            item.entrances.append(datetime.utcnow())
-            state.records[item.key] = item
+            item.entrances.append(datetime.now(timezone.utc))
         else:
             item = models.FeedStateItem(
                 key=str(feed_item.ip_address),
                 data=feed_item,
                 data_model='CharlesHaley',
-                first_seen=datetime.utcnow(),
+                first_seen=datetime.now(timezone.utc),
                 current=True,
-                entrances=[datetime.utcnow()],
+                entrances=[datetime.now(timezone.utc)],
                 exits=[],
             )
-            state.records[item.key] = item
+        state.records[item.key] = item
         entrants.append(item)
 
     # step 3, persist state
     internals.logger.info("process step 3 persist state")
-    state.last_checked = datetime.utcnow()
+    state.last_checked = datetime.now(timezone.utc)
     state.save()
     internals.logger.info(f"Detected {len(entrants)} new entrants")
     return entrants
 
 
 def handler(event, context):
-    start = datetime.utcnow()
+    start = datetime.now(timezone.utc)
     for feed in config.feeds:
         results = fetch(feed)
         if not results:
             continue
-        # services.aws.delete_s3(f"{internals.APP_ENV}/feeds/charles.the-haleys.org/{feed.name}/state.json")
+        # services.aws.delete_s3(f"{internals.APP_ENV}/feeds/{feed.source}/{feed.name}/state.json")
         services.aws.store_s3(
-            path_key=f"{internals.APP_ENV}/feeds/charles.the-haleys.org/{feed.name}/{start.strftime('%Y%m%d%H')}.json",
+            path_key=f"{internals.APP_ENV}/feeds/{feed.source}/{feed.name}/{start.strftime('%Y%m%d%H')}.json",
             value=json.dumps(results, default=str)
         )
         for state_item in process(feed, results):
