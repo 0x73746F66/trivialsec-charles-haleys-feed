@@ -9,7 +9,7 @@ import models
 import services.aws
 
 
-def pre_process(contents: str) -> list[models.CharlesHaley]:
+def pre_process(contents: str, category: str) -> list[models.CharlesHaley]:
     internals.logger.debug("pre_process")
     results = []
     if not contents:
@@ -30,7 +30,7 @@ def pre_process(contents: str) -> list[models.CharlesHaley]:
             results.append(models.CharlesHaley(
                 ip_address=ip_address.strip(),
                 last_seen=datetime.fromtimestamp(timestamp),
-                category='sshclient'
+                category=category
             ))
         except ValidationError as err:
             internals.logger.warning(err, exc_info=True)
@@ -47,12 +47,12 @@ def fetch(feed: models.FeedConfig) -> list[models.CharlesHaley]:
         return []
     file_path = internals.download_file(feed.url)
     if file_path.exists():
-        return pre_process(file_path.read_text(encoding='utf8'))
+        return pre_process(file_path.read_text(encoding='utf8'), feed.name)
     return []
 
 
 def process(feed: models.FeedConfig, feed_items: list[models.CharlesHaley]) -> list[models.FeedStateItem]:
-    state = models.FeedState(source='charles.the-haleys.org', feed_name=feed.name)
+    state = models.FeedState(source=feed.source, feed_name=feed.name)
     # step 0, initial ONLY block
     if not state.load():
         internals.logger.warning("process step 0 initial ONLY")
