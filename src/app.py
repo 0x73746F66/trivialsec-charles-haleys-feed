@@ -88,15 +88,13 @@ def handler(event, context):
             internals.logger.warning(f"{feed.name} [magenta]no data[/magenta]")
             continue
         services.aws.store_s3(
-            path_key=f"{object_prefix}latest.txt",
-            value=contents
-        )
-        services.aws.store_s3(
             path_key=f"{object_prefix}{instance_date}.txt",
             value=contents
         )
         if not last_contents:
             last_contents = ''
+            # split contents in half, all are being processed the first time
+            contents = contents.splitlines()[:round(len(contents.splitlines())/2)]
         queued = 0
         for ip_address in compare_contents(last_contents, contents):
             dates = []
@@ -122,4 +120,8 @@ def handler(event, context):
                 queued += 1
                 results += 1
         internals.logger.info(f"{queued} queued records -> {feed.name}")
+        services.aws.store_s3(
+            path_key=f"{object_prefix}latest.txt",
+            value=contents
+        )
     internals.logger.info(f"{results} processed records")
