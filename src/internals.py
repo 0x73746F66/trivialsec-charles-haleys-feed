@@ -71,7 +71,7 @@ class DelayRetryHandler(Exception):
         Exception.__init__(self, kwargs.get("msg", "Max retries exceeded"))
 
 
-  # pylint: disable=unused-argument  # pylint: disable=unused-argumentclass JSONEncoder(json.JSONEncoder):
+class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, date):
             return o.isoformat()
